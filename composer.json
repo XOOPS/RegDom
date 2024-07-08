@@ -1,14 +1,13 @@
 {
   "name": "xoops/regdom",
   "description": "OO adaptation of Florian Sager's regdom library for querying Mozilla Public Suffix List",
-  "version": "2.0.0-alpha-1",
   "keywords": [
     "public",
     "suffix",
     "tld",
     "regdom"
   ],
-  "homepage": "https://github.com/xoops/RegDom",
+  "homepage": "https://github.com/XOOPS/RegDom",
   "type": "library",
   "license": "Apache-2.0",
   "authors": [
@@ -26,12 +25,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Xoops\\Regdom\\": "src/"
+      "Xoops\\RegDom\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Xoops\\Regdom\\": "tests/unit/"
+      "Xoops\\RegDom\\": "tests/unit/"
     }
   },
 
