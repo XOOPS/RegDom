@@ -4,6 +4,7 @@
 /archive export-ignore
 /_archive export-ignore
 /tests export-ignore
+.github/  export-ignore
 .gitattributes export-ignore
 .gitignore export-ignore
 .scrutinizer.yml export-ignore
