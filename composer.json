@@ -17,7 +17,7 @@
     }
   ],
   "require": {
-    "php": ">=7.4.0",
+    "php": "^7.4.0 || ^8.4.0",
     "symfony/polyfill-mbstring": "^1.33.0"
   },
   "require-dev": {
@@ -36,6 +36,25 @@
       "Xoops\\RegDom\\": "tests/unit/"
     }
   },
-
-  "bin": ["bin/reloadpsl"]
+  "bin": [
+    "bin/reloadpsl"
+  ],
+  "scripts": {
+    "test": "phpunit",
+    "lint": "php -l src",
+    "fix": "phpcbf --standard=PSR12 src"
+  },
+  "config": {
+    "sort-packages": true,
+    "optimize-autoloader": true,
+    "classmap-authoritative": true,
+    "preferred-install": "dist"
+  },
+  "minimum-stability": "beta",
+  "prefer-stable": true,
+  "support": {
+    "issues": "https://github.com/XOOPS/RegDom/issues",
+    "source": "https://github.com/XOOPS/RegDom"
+  }
 }
+
