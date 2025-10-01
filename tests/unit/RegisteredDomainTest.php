@@ -21,28 +21,40 @@ class RegisteredDomainTest extends TestCase
     public function testGetRegisteredDomain(string $host, ?string $expected): void
     {
         $this->pslMock->method('getPublicSuffix')->willReturnCallback(function (string $h) {
+            // Handle invalid inputs
+            if ($h === '' || filter_var($h, FILTER_VALIDATE_IP) || $h === 'localhost') {
+                return null;
+            }
+
+            // Exception rules: return suffix one level up
+            if ($h === 'city.kawasaki.jp') {
+                return 'kawasaki.jp';  // So city.kawasaki.jp is registrable
+            }
+            if ($h === 'www.ck') {
+                return 'ck';  // So www.ck is registrable
+            }
+
+            // Standard suffix map
             $suffixes = [
                 'co.uk' => 'co.uk',
                 'com.cn' => 'com.cn',
                 'xn--55qx5d.cn' => 'xn--55qx5d.cn', // 公司.cn
-                'ck' => 'ck',
                 'com' => 'com',
-                'net' => 'net',
-                'org' => 'org',
-                'cn' => 'cn',
+                'jp' => 'jp',
                 'de' => 'de',
-                'uk' => 'uk',
             ];
-            // Find the longest matching suffix using PHP 7.4 compatible code
+
+            // Find longest matching suffix
+            $longestMatch = null;
             foreach ($suffixes as $suffix => $result) {
                 if (substr($h, -strlen($suffix)) === $suffix) {
-                    if ($suffix === 'ck' && $h !== 'www.ck') {
-                        return $h;
+                    if ($longestMatch === null || strlen($suffix) > strlen($longestMatch)) {
+                        $longestMatch = $result;
                     }
-                    return $result;
                 }
             }
-            return null;
+
+            return $longestMatch;
         });
 
         $regdom = new RegisteredDomain($this->pslMock);
@@ -54,7 +66,11 @@ class RegisteredDomainTest extends TestCase
      */
     public function testDomainMatches(string $host, string $domain, bool $expected): void
     {
-        $this->pslMock->method('isPublicSuffix')->willReturnCallback(fn(string $d) => in_array($d, ['com', 'co.uk', 'ck'], true));
+        $this->pslMock->method('isPublicSuffix')->willReturnCallback(
+            fn(string $d) => in_array($d, ['com', 'co.uk', 'ck'], true)
+        );
+
+        // FIX: Use -> not .
         self::setStaticPslInstance($this->pslMock);
         $this->assertSame($expected, RegisteredDomain::domainMatches($host, $domain));
         self::setStaticPslInstance(null);
@@ -67,9 +83,11 @@ class RegisteredDomainTest extends TestCase
             'valid subdomain' => ['sub.example.com', 'example.com'],
             'valid multi-level suffix' => ['www.example.co.uk', 'example.co.uk'],
             'url with path' => ['https://example.com/path', 'example.com'],
+            'mixed case URL' => ['HTTPS://WWW.EXAMPLE.COM', 'example.com'],
             'public suffix itself' => ['com', null],
             'unlisted tld' => ['example.example', null],
             'wildcard exception' => ['www.ck', 'www.ck'],
+            'PSL exception rule' => ['city.kawasaki.jp', 'city.kawasaki.jp'],
             'IDN simple' => ['食狮.com.cn', '食狮.com.cn'],
             'IDN multi-level' => ['www.食狮.公司.cn', '食狮.公司.cn'],
             'IDN punycode' => ['www.xn--85x722f.xn--55qx5d.cn', '食狮.公司.cn'],
@@ -98,7 +116,6 @@ class RegisteredDomainTest extends TestCase
         ];
     }
 
-    // FINAL FIX: The polyfill has been completely removed from this method.
     private static function setStaticPslInstance(?PublicSuffixList $psl): void
     {
         $reflection = new \ReflectionClass(RegisteredDomain::class);
