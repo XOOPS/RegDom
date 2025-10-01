@@ -16,6 +16,17 @@ class RegisteredDomainTest extends TestCase
     }
 
     /**
+     * This method is automatically called by PHPUnit after each test.
+     * It's the perfect place to clean up the static state.
+     */
+    protected function tearDown(): void
+    {
+        // Always reset the static instance to prevent test leakage
+        RegisteredDomain::setTestPslInstance(null);
+        parent::tearDown();
+    }
+
+    /**
      * @dataProvider getRegisteredDomainProvider
      */
     public function testGetRegisteredDomain(string $host, ?string $expected): void
@@ -70,9 +81,11 @@ class RegisteredDomainTest extends TestCase
             fn(string $d) => in_array($d, ['com', 'co.uk', 'ck'], true)
         );
 
-        self::setStaticPslInstance($this->pslMock);
+        // Set the mock for this specific test
+        RegisteredDomain::setTestPslInstance($this->pslMock);
+
+        // The try...finally block is no longer needed because tearDown() will handle cleanup
         $this->assertSame($expected, RegisteredDomain::domainMatches($host, $domain));
-        self::setStaticPslInstance(null);
     }
 
     public static function getRegisteredDomainProvider(): array

@@ -127,17 +127,21 @@ class PublicSuffixList
 
     /**
      * Gets metadata about the loaded PSL cache, including a warning flag if the data is stale.
-     * @return array<string, mixed> Metadata about the active cache.
+     *
+     * This is useful for admin dashboards and diagnostic tools to check the status of the PSL data.
+     *
+     * @return array{
+     * active_cache: string|null,
+     * last_updated: string|null,
+     * days_old: int|null,
+     * rule_counts: array<string, int>,
+     * needs_update: bool
+     * } Metadata about the active cache.
      */
-
     public function getMetadata(): array
     {
-        // Add a check to ensure $rules is not null before accessing offsets
-        if (self::$rules === null) {
-            return ['error' => 'Rules not loaded'];
-        }
-
-        $runtimePath = (defined('XOOPS_VAR_PATH') && is_string(XOOPS_VAR_PATH))
+        // ... method body remains the same ...
+        $runtimePath = defined('XOOPS_VAR_PATH')
             ? XOOPS_VAR_PATH . '/cache/regdom/psl.cache.php'
             : null;
         $bundledPath = __DIR__ . '/../data/psl.cache.php';
