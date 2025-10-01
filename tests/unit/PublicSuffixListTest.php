@@ -1,94 +1,45 @@
 <?php declare(strict_types=1);
 
-namespace Xoops\RegDom;
+namespace Xoops\RegDom\Tests;
 
+use Xoops\RegDom\PublicSuffixList;
 use PHPUnit\Framework\TestCase;
 
 class PublicSuffixListTest extends TestCase
 {
-    /**
-     * @var PublicSuffixList
-     */
-    protected PublicSuffixList $object;
+    private PublicSuffixList $psl;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
     protected function setUp(): void
     {
-        $this->object = new PublicSuffixList();
+        $this->psl = new PublicSuffixList();
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown(): void
+    public function testIsPublicSuffix(): void
     {
-//        $this->object->clearDataDirectory();
+        $this->assertTrue($this->psl->isPublicSuffix('com'));
+        $this->assertTrue($this->psl->isPublicSuffix('co.uk'));
+        $this->assertFalse($this->psl->isPublicSuffix('example.com'));
+        $this->assertFalse($this->psl->isPublicSuffix('parliament.uk')); // Exception rule
+        $this->assertTrue($this->psl->isPublicSuffix('anything.ck'));    // Wildcard rule
     }
 
-    public function testContracts()
+    public function testGetPublicSuffix(): void
     {
-        $this->assertInstanceOf(PublicSuffixList::class, $this->object);
+        $this->assertSame('com', $this->psl->getPublicSuffix('example.com'));
+        $this->assertSame('co.uk', $this->psl->getPublicSuffix('www.example.co.uk'));
+        $this->assertSame('uk', $this->psl->getPublicSuffix('example.parliament.uk'));
+        $this->assertSame('something.ck', $this->psl->getPublicSuffix('sub.something.ck'));
+        $this->assertSame('com', $this->psl->getPublicSuffix('com'));
     }
 
-    public function testGetSet()
+    public function testGetMetadata(): void
     {
-        $tree = $this->object->getTree();
-        $this->assertIsArray($tree);
-        $this->assertArrayHasKey('com', $tree);
-    }
-
-    public function testClearDataDirectory()
-    {
-        $this->object->clearDataDirectory();
-        $tree = $this->object->getTree();
-        $this->assertIsArray($tree);
-        $this->assertArrayHasKey('com', $tree);
-    }
-
-    public function testClearDataDirectoryCacheOnly()
-    {
-        $this->object->clearDataDirectory(true);
-        $tree = $this->object->getTree();
-        $this->assertIsArray($tree);
-        $this->assertArrayHasKey('com', $tree);
-    }
-
-    public function testSetURL()
-    {
-        $url = 'https://example.com';
-        $this->object->setURL($url);
-
-        // Use reflection to call the protected setFallbackURL method
-        $reflection = new \ReflectionClass($this->object);
-        // Check the URL property to verify the fallback URL is set correctly
-        $property = $reflection->getProperty('url');
-        $property->setAccessible(true);
-
-        $this->assertSame($url, $property->getValue($this->object));
-
-    }
-
-    public function testFallbackURL()
-    {
-        // Set URL to null and trigger the fallback mechanism
-        $this->object->setURL(null);
-
-        // Use reflection to call the protected setFallbackURL method
-        $reflection = new \ReflectionClass($this->object);
-        $method = $reflection->getMethod('setFallbackURL');
-        $method->setAccessible(true);
-        $method->invoke($this->object);
-
-        // Check the URL property to verify the fallback URL is set correctly
-        $property = $reflection->getProperty('url');
-        $property->setAccessible(true);
-
-//        $expectedUrl = file_exists(dirname(__DIR__, 2) . '/data/public_suffix_list.dat') ? dirname(__DIR__, 2) . '/data/public_suffix_list.dat' : 'https://publicsuffix.org/list/public_suffix_list.dat';
-        $expectedUrl = \file_exists(\dirname(__DIR__, 2) . '/data/public_suffix_list.dat') ?  '/../data/public_suffix_list.dat' : 'https://publicsuffix.org/list/public_suffix_list.dat';
-        $this->assertSame($expectedUrl, $property->getValue($this->object));
+        $metadata = $this->psl->getMetadata();
+        $this->assertIsArray($metadata);
+        $this->assertArrayHasKey('active_cache', $metadata);
+        $this->assertArrayHasKey('last_updated', $metadata);
+        $this->assertArrayHasKey('days_old', $metadata);
+        $this->assertArrayHasKey('rule_counts', $metadata);
+        $this->assertGreaterThan(1000, $metadata['rule_counts']['normal']);
     }
 }

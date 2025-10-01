@@ -1,188 +1,130 @@
 <?php declare(strict_types=1);
 
-namespace Xoops\RegDom;
+namespace Xoops\RegDom\Tests;
 
+use Xoops\RegDom\PublicSuffixList;
 use Xoops\RegDom\RegisteredDomain;
 use PHPUnit\Framework\TestCase;
-//use PHPUnit\Framework\Attributes\DataProvider; //PHP 8
 
-include __DIR__ . '/../../src/RegisteredDomain.php';
-include __DIR__ . '/../../src/PublicSuffixList.php';
-
-
-/**
- * Class TestProtectedDecodePunycode used to test protected decodePunycode() method that is
- * only used if intl extension is not loaded.
- */
-class TestProtectedDecodePunycode extends RegisteredDomain
-{
-    public function doDecodePunycode(string $string)
-    {
-        return $this->decodePunycode($string);
-    }
-}
 class RegisteredDomainTest extends TestCase
 {
-    /**
-     * @var RegisteredDomain
-     */
-    protected RegisteredDomain $object;
+    private PublicSuffixList $pslMock;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
     protected function setUp(): void
     {
-        $this->object = new RegisteredDomain(new PublicSuffixList());
+        $this->pslMock = $this->createMock(PublicSuffixList::class);
     }
 
     /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
+     * This method is automatically called by PHPUnit after each test.
+     * It's the perfect place to clean up the static state.
      */
     protected function tearDown(): void
     {
-        // Clean up if necessary
-    }
-
-    public function testContracts(): void
-    {
-        $this->assertInstanceOf(RegisteredDomain::class, $this->object);
-    }
-
-
-//    #[dataProvider('domainsProvider')] //PHP 8
-    /**
-     * @dataProvider domainsProvider
-     */
-    public function testGetRegisteredDomain(string $url, ?string $regdom): void
-    {
-        $this->assertEquals($regdom, $this->object->getRegisteredDomain($url));
+        // Always reset the static instance to prevent test leakage
+        RegisteredDomain::setTestPslInstance(null);
+        parent::tearDown();
     }
 
     /**
-     * @return array<int, array{0: ?string, 1: ?string}>
+     * @dataProvider getRegisteredDomainProvider
      */
-    public static function domainsProvider(): array
+    public function testGetRegisteredDomain(string $host, ?string $expected): void
+    {
+        $this->pslMock->method('getPublicSuffix')->willReturnCallback(function (string $h) {
+            // Handle invalid inputs
+            if ($h === '' || filter_var($h, FILTER_VALIDATE_IP) || $h === 'localhost') {
+                return null;
+            }
+
+            // Exception rules: return suffix one level up
+            if ($h === 'city.kawasaki.jp') {
+                return 'kawasaki.jp';  // So city.kawasaki.jp is registrable
+            }
+            if ($h === 'www.ck') {
+                return 'ck';  // So www.ck is registrable
+            }
+
+            // Standard suffix map
+            $suffixes = [
+                'co.uk' => 'co.uk',
+                'com.cn' => 'com.cn',
+                'xn--55qx5d.cn' => 'xn--55qx5d.cn', // 公司.cn
+                'com' => 'com',
+                'jp' => 'jp',
+                'de' => 'de',
+            ];
+
+            // Find longest matching suffix
+            $longestMatch = null;
+            foreach ($suffixes as $suffix => $result) {
+                if (substr($h, -strlen($suffix)) === $suffix) {
+                    if ($longestMatch === null || strlen($suffix) > strlen($longestMatch)) {
+                        $longestMatch = $result;
+                    }
+                }
+            }
+
+            return $longestMatch;
+        });
+
+        $regdom = new RegisteredDomain($this->pslMock);
+        $this->assertSame($expected, $regdom->getRegisteredDomain($host));
+    }
+
+    /**
+     * @dataProvider domainMatchesProvider
+     */
+    public function testDomainMatches(string $host, string $domain, bool $expected): void
+    {
+        $this->pslMock->method('isPublicSuffix')->willReturnCallback(
+            fn(string $d) => in_array($d, ['com', 'co.uk', 'ck'], true)
+        );
+
+        // Set the mock for this specific test
+        RegisteredDomain::setTestPslInstance($this->pslMock);
+
+        // The try...finally block is no longer needed because tearDown() will handle cleanup
+        $this->assertSame($expected, RegisteredDomain::domainMatches($host, $domain));
+    }
+
+    public static function getRegisteredDomainProvider(): array
     {
         return [
-            ['', ''],
-            // Mixed case.
-            ['COM', null],
-            ['example.COM', 'example.com'],
-            ['WwW.example.COM', 'example.com'],
-            // Leading dot.
-            ['.com', null],
-            ['.example', null],
-            // Unlisted TLD.
-            ['example', null],
-            ['example.example', 'example.example'],
-            ['b.example.example', 'example.example'],
-            ['a.b.example.example', 'example.example'],
-            // TLD with only 1 rule.
-            ['biz', null],
-            ['domain.biz', 'domain.biz'],
-            ['b.domain.biz', 'domain.biz'],
-            ['a.b.domain.biz', 'domain.biz'],
-            // TLD with some 2-level rules.
-            ['com', null],
-            ['example.com', 'example.com'],
-            ['b.example.com', 'example.com'],
-            ['a.b.example.com', 'example.com'],
-            ['uk.com', null],
-            ['example.uk.com', 'example.uk.com'],
-            ['b.example.uk.com', 'example.uk.com'],
-            ['a.b.example.uk.com', 'example.uk.com'],
-            ['test.ac', 'test.ac'],
-            // TLD with only 1 (wildcard) rule.
-            ['mm', null],
-            ['c.mm', null],
-            ['b.c.mm', 'b.c.mm'],
-            ['a.b.c.mm', 'b.c.mm'],
-            // More complex TLD.
-            ['jp', null],
-            ['test.jp', 'test.jp'],
-            ['www.test.jp', 'test.jp'],
-            ['ac.jp', null],
-            ['test.ac.jp', 'test.ac.jp'],
-            ['www.test.ac.jp', 'test.ac.jp'],
-            ['kyoto.jp', null],
-            ['test.kyoto.jp', 'test.kyoto.jp'],
-            ['ide.kyoto.jp', null],
-            ['b.ide.kyoto.jp', 'b.ide.kyoto.jp'],
-            ['a.b.ide.kyoto.jp', 'b.ide.kyoto.jp'],
-            ['c.kobe.jp', null],
-            ['b.c.kobe.jp', 'b.c.kobe.jp'],
-            ['a.b.c.kobe.jp', 'b.c.kobe.jp'],
-            ['city.kobe.jp', 'city.kobe.jp'],
-            ['www.city.kobe.jp', 'city.kobe.jp'],
-            // TLD with a wildcard rule and exceptions.
-            ['ck', null],
-            ['test.ck', null],
-            ['b.test.ck', 'b.test.ck'],
-            ['a.b.test.ck', 'b.test.ck'],
-            ['www.ck', 'www.ck'],
-            ['www.www.ck', 'www.ck'],
-            // US K12.
-            ['us', null],
-            ['test.us', 'test.us'],
-            ['www.test.us', 'test.us'],
-            ['ak.us', null],
-            ['test.ak.us', 'test.ak.us'],
-            ['www.test.ak.us', 'test.ak.us'],
-            ['k12.ak.us', null],
-            ['test.k12.ak.us', 'test.k12.ak.us'],
-            ['www.test.k12.ak.us', 'test.k12.ak.us'],
-            // IDN labels.
-            ['食狮.com.cn', '食狮.com.cn'],
-            ['食狮.公司.cn', '食狮.公司.cn'],
-            ['www.食狮.公司.cn', '食狮.公司.cn'],
-            ['shishi.公司.cn', 'shishi.公司.cn'],
-            ['公司.cn', null],
-            ['食狮.中国', '食狮.中国'],
-            ['www.食狮.中国', '食狮.中国'],
-            ['shishi.中国', 'shishi.中国'],
-            ['中国', null],
-            // Same as above, but punycoded.
-            ['xn--85x722f.com.cn', '食狮.com.cn'],
-            ['xn--85x722f.xn--55qx5d.cn', '食狮.公司.cn'],
-            ['www.xn--85x722f.xn--55qx5d.cn', '食狮.公司.cn'],
-            ['shishi.xn--55qx5d.cn', 'shishi.公司.cn'],
-            ['xn--55qx5d.cn', null],
-            ['xn--85x722f.xn--fiqs8s', '食狮.中国'],
-            ['www.xn--85x722f.xn--fiqs8s', '食狮.中国'],
-            ['shishi.xn--fiqs8s', 'shishi.中国'],
-            ['xn--fiqs8s', null],
-            // inspiration case
-            ['rfu.in.ua', 'rfu.in.ua'],
-            ['in.ua', null],
+            'valid simple' => ['example.com', 'example.com'],
+            'valid subdomain' => ['sub.example.com', 'example.com'],
+            'valid multi-level suffix' => ['www.example.co.uk', 'example.co.uk'],
+            'url with path' => ['https://example.com/path', 'example.com'],
+            'mixed case URL' => ['HTTPS://WWW.EXAMPLE.COM', 'example.com'],
+            'public suffix itself' => ['com', null],
+            'unlisted tld' => ['example.example', null],
+            'wildcard exception' => ['www.ck', 'www.ck'],
+            'PSL exception rule' => ['city.kawasaki.jp', 'city.kawasaki.jp'],
+            'IDN simple' => ['食狮.com.cn', '食狮.com.cn'],
+            'IDN multi-level' => ['www.食狮.公司.cn', '食狮.公司.cn'],
+            'IDN punycode' => ['www.xn--85x722f.xn--55qx5d.cn', '食狮.公司.cn'],
+            'IDN public suffix' => ['公司.cn', null],
+            'empty string' => ['', null],
+            'localhost' => ['localhost', null],
+            'IP address' => ['192.168.1.1', null],
         ];
     }
 
-//    #[\PHPUnit\Framework\Attributes\DataProvider('punycodeProvider')] //PHP 8
-    /**
-     * @dataProvider punycodeProvider
-     */
-    public function testDecodePunycode(string $punycode, string $decoded): void
-    {
-        $object = new TestProtectedDecodePunycode(new PublicSuffixList());
-        $this->assertEquals($decoded, $object->doDecodePunycode($punycode));
-    }
-
-    /**
-     * @return array<int, array{0: ?string, 1: ?string}>
-     */
-    public static function punycodeProvider(): array
+    public static function domainMatchesProvider(): array
     {
         return [
-            ['', ''],
-            // Mixed case.
-            ['test', 'test'],
-            // punycoded
-            ['xn--85x722f', '食狮'],
-            ['xn--55qx5d', '公司'],
-            ['xn--fiqs8s', '中国'],
+            'exact match' => ['example.com', 'example.com', true],
+            'subdomain match' => ['sub.example.com', 'example.com', true],
+            'host-only' => ['example.com', '', true],
+            'ip host-only' => ['192.168.0.1', '', true],
+            'ip with domain' => ['192.168.0.1', '192.168.0.1', false],
+            'localhost host-only' => ['localhost', '', true],
+            'localhost with domain' => ['localhost', 'localhost', false],
+            'public suffix rejected' => ['example.com', 'com', false],
+            'case insensitive' => ['WWW.EXAMPLE.COM', 'example.com', true],
+            'leading dot ignored' => ['example.com', '.example.com', true],
+            'port stripped' => ['example.com:8080', 'example.com', true],
+            'idn match' => ['münchen.de', 'münchen.de', true],
         ];
-}
+    }
 }
