@@ -55,7 +55,7 @@
   "scripts": {
     "test": "phpunit --colors=always",
     "phpunit": "phpunit --colors=always",
-    "lint": "phpcs --standard=PSR12 src",
+    "lint": "phpcs",
     "analyse": "phpstan analyse --level=max src",
     "fix": "phpcbf --standard=PSR12 src",
     "update-psl": "@php bin/update-psl.php",
