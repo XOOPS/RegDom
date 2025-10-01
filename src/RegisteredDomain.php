@@ -122,4 +122,12 @@ class RegisteredDomain
         }
         return function_exists('idn_to_ascii') ? (idn_to_ascii($host, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46) ?: $host) : $host;
     }
+
+    /**
+     * @internal This method is for testing purposes only.
+     */
+    public static function setTestPslInstance(?PublicSuffixList $psl): void
+    {
+        self::$pslInstance = $psl;
+    }
 }

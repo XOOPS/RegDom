@@ -117,9 +117,6 @@ class RegisteredDomainTest extends TestCase
 
     private static function setStaticPslInstance(?PublicSuffixList $psl): void
     {
-        $reflection = new \ReflectionClass(RegisteredDomain::class);
-        $property = $reflection->getProperty('pslInstance');
-        $property->setAccessible(true);
-        $property->setValue(null, $psl);
+        RegisteredDomain::setTestPslInstance($psl);
     }
 }
