@@ -128,22 +128,34 @@ class PublicSuffixList
     /**
      * Gets metadata about the loaded PSL cache, including a warning flag if the data is stale.
      *
-     * This is useful for admin dashboards and diagnostic tools to check the status of the PSL data.
-     *
      * @return array{
      * active_cache: string|null,
      * last_updated: string|null,
      * days_old: int|null,
      * rule_counts: array<string, int>,
-     * needs_update: bool
+     * needs_update: bool,
+     * error?: string
      * } Metadata about the active cache.
      */
     public function getMetadata(): array
     {
-        // ... method body remains the same ...
-        $runtimePath = defined('XOOPS_VAR_PATH')
-            ? XOOPS_VAR_PATH . '/cache/regdom/psl.cache.php'
-            : null;
+        // Add a guard clause to handle the case where rules are not loaded.
+        if (self::$rules === null) {
+            return [
+                'active_cache' => null,
+                'last_updated' => null,
+                'days_old'     => null,
+                'rule_counts'  => ['normal' => 0, 'wildcard' => 0, 'exception' => 0],
+                'needs_update' => true,
+                'error'        => 'Rules not loaded',
+            ];
+        }
+
+        $runtimePath = null;
+        // Add is_string() to ensure the constant is safe to use.
+        if (defined('XOOPS_VAR_PATH') && is_string(XOOPS_VAR_PATH) && XOOPS_VAR_PATH !== '') {
+            $runtimePath = XOOPS_VAR_PATH . '/cache/regdom/psl.cache.php';
+        }
         $bundledPath = __DIR__ . '/../data/psl.cache.php';
 
         $activeCache = null;
@@ -157,10 +169,13 @@ class PublicSuffixList
             $lastUpdated = filemtime($bundledPath);
         }
 
+        // Cast the result of floor() to an integer to match the docblock.
+        $daysOld = $lastUpdated ? (int) floor((time() - $lastUpdated) / 86400) : null;
+
         $metadata = [
             'active_cache' => $activeCache,
             'last_updated' => $lastUpdated ? date('Y-m-d H:i:s T', $lastUpdated) : null,
-            'days_old'     => $lastUpdated ? floor((time() - $lastUpdated) / 86400) : null,
+            'days_old'     => $daysOld,
             'rule_counts'  => [
                 'normal'    => count(self::$rules['NORMAL']),
                 'wildcard'  => count(self::$rules['WILDCARD']),
