@@ -24,7 +24,9 @@ $runtimeCachePath = null;
 if (defined('XOOPS_VAR_PATH')) {
     $runtimeCacheDir = XOOPS_VAR_PATH . '/cache/regdom';
     if (!is_dir($runtimeCacheDir)) {
-        @mkdir($runtimeCacheDir, 0777, true);
+        if (!mkdir($runtimeCacheDir, 0777, true) && !is_dir($runtimeCacheDir)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $runtimeCacheDir));
+        }
     }
     if (is_writable($runtimeCacheDir)) {
         $runtimeCachePath = $runtimeCacheDir . '/psl.cache.php';
@@ -87,7 +89,13 @@ foreach ($writePaths as $type => $cachePath) {
         echo "SUCCESS: {$type} cache updated with {$totalRules} rules.\n";
     } else {
         echo "WARNING: Could not write {$type} cache to {$cachePath}.\n";
-        @unlink($tmpPath);
+        // Attempt to delete the temporary file.
+        if (file_exists($tmpPath) && !unlink($tmpPath)) {
+            // If unlink() fails, throw an exception to halt execution and signal an error.
+            throw new \RuntimeException(
+                    "CRITICAL: Failed to delete temporary file at: {$tmpPath}. Please check file permissions."
+            );
+        }
     }
 }
 
