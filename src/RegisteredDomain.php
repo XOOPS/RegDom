@@ -69,7 +69,6 @@ class RegisteredDomain
      */
     public static function domainMatches(string $host, string $domain): bool
     {
-        // ... This method is already correct from the previous step ...
         $host   = self::normalizeHost($host);
         $domain = self::normalizeHost(ltrim($domain, '.'));
         if ($domain === '') {
@@ -104,7 +103,6 @@ class RegisteredDomain
 
     private static function normalizeHost(string $input): string
     {
-        // This method is already correct from the previous step
         $host = (strpos($input, '/') !== false) ? parse_url($input, PHP_URL_HOST) : $input;
         if (!is_string($host)) {
             $host = '';
@@ -119,7 +117,6 @@ class RegisteredDomain
 
     private static function toAscii(string $host): string
     {
-        // This method is already correct
         if ($host === '') {
             return '';
         }

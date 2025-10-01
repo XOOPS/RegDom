@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Xoops\RegDom\Tests; // <-- CORRECT NAMESPACE
+namespace Xoops\RegDom\Tests;
 
 use Xoops\RegDom\PublicSuffixList;
 use PHPUnit\Framework\TestCase;

@@ -70,7 +70,6 @@ class RegisteredDomainTest extends TestCase
             fn(string $d) => in_array($d, ['com', 'co.uk', 'ck'], true)
         );
 
-        // FIX: Use -> not .
         self::setStaticPslInstance($this->pslMock);
         $this->assertSame($expected, RegisteredDomain::domainMatches($host, $domain));
         self::setStaticPslInstance(null);
