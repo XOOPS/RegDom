@@ -49,7 +49,8 @@ class PublicSuffixList
                 $rules = include $path;
 
                 // FINAL: Add explicit is_array checks for the inner arrays.
-                if (is_array($rules)
+                if (
+                    is_array($rules)
                     && isset($rules['NORMAL'], $rules['WILDCARD'], $rules['EXCEPTION'])
                     && is_array($rules['NORMAL'])
                     && is_array($rules['WILDCARD'])

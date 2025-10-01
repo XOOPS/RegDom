@@ -37,8 +37,6 @@ class RegisteredDomain
      * @param string $host The host string to process (e.g., "sub.example.co.uk").
      * @param bool   $utf8 If true, returns a human-readable UTF-8 string. If false, returns ASCII/Punycode.
      * @return string|null The registrable domain (e.g., "example.co.uk") or null if invalid.
-     * @example getRegisteredDomain('www.münchen.de') → 'münchen.de'
-     * @example getRegisteredDomain('co.uk') → null
      */
     public function getRegisteredDomain(string $host, bool $utf8 = true): ?string
     {
@@ -54,9 +52,10 @@ class RegisteredDomain
             return null;
         }
 
+        // Correctly extract the label before the public suffix
         $hostWithoutSuffix = substr($hostAscii, 0, -strlen($publicSuffix) - 1);
-        $dotPos = strrpos($hostWithoutSuffix, '.');
-        $domainLabel = ($dotPos === false) ? $hostWithoutSuffix : substr($hostWithoutSuffix, $dotPos + 1);
+        $parts = explode('.', $hostWithoutSuffix);
+        $domainLabel = array_pop($parts);
 
         $registrableAscii = $domainLabel . '.' . $publicSuffix;
 
@@ -91,36 +90,48 @@ class RegisteredDomain
         $usePSL = !defined('XOOPS_COOKIE_DOMAIN_USE_PSL') || XOOPS_COOKIE_DOMAIN_USE_PSL;
         if ($usePSL) {
             self::$pslInstance ??= new PublicSuffixList();
-            self::$regdomInstance ??= new self(self::$pslInstance);
+            $regdomInstance = new self(self::$pslInstance);
 
             if (self::$pslInstance->isPublicSuffix($domain)) {
                 return false;
             }
 
-            $hostRegisteredDomain = self::$regdomInstance->getRegisteredDomain($host, false);
-            $domainRegisteredDomain = self::$regdomInstance->getRegisteredDomain($domain, false);
+            $hostRegisteredDomain = $regdomInstance->getRegisteredDomain($host, false);
+            $domainRegisteredDomain = $regdomInstance->getRegisteredDomain($domain, false);
 
             if ($hostRegisteredDomain && $domainRegisteredDomain && $hostRegisteredDomain !== $domainRegisteredDomain) {
                 return false;
             }
         }
 
-        $host   = self::toAscii($host);
-        $domain = self::toAscii($domain);
+        if (function_exists('idn_to_ascii')) {
+            $host   = idn_to_ascii($host, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46) ?: $host;
+            $domain = idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46) ?: $domain;
+        }
 
         if ($host === $domain) return true;
 
-        // Use substr_compare for PHP 7.4 compatibility
+        // FINAL FIX: Use substr_compare for PHP 7.4 compatibility
         return (strlen($host) > strlen($domain))
             && (substr_compare($host, '.' . $domain, -1 - strlen($domain)) === 0);
     }
 
     /**
      * Normalizes a host string for comparison.
+     *
+     * @param string $input The host string or a full URL.
+     * @return string The normalized host.
      */
     private static function normalizeHost(string $input): string
     {
-        $host = trim(strtolower($input));
+        // FINAL FIX: Restore URL parsing to handle inputs like 'https://...'
+        $host = (strpos($input, '/') !== false) ? parse_url($input, PHP_URL_HOST) : $input;
+        if (!is_string($host)) {
+            $host = '';
+        }
+
+        $host = trim(mb_strtolower($host, 'UTF-8'));
+
         if ($host !== '' && $host[0] === '[') $host = trim($host, '[]');
         $host = preg_replace('/:\d+$/', '', $host) ?? $host;
         return rtrim($host, '.');
