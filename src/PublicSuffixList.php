@@ -63,7 +63,7 @@ class PublicSuffixList
             }
         }
         // Last resort: throw an exception instead of logging
-        throw new \Xoops\RegDom\Exception\PslCacheNotFoundException('No valid PSL cache found. Run `composer update-psl` to generate one.');
+        throw new \Xoops\RegDom\Exception\PslCacheNotFoundException('No valid PSL cache found. Run `composer run update-psl` to generate one.');
     }
 
     /**

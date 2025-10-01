@@ -127,9 +127,4 @@ class RegisteredDomainTest extends TestCase
             'idn match' => ['münchen.de', 'münchen.de', true],
         ];
     }
-
-    private static function setStaticPslInstance(?PublicSuffixList $psl): void
-    {
-        RegisteredDomain::setTestPslInstance($psl);
-    }
 }
