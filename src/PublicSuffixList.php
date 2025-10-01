@@ -64,8 +64,6 @@ class PublicSuffixList
         }
         // Last resort: throw an exception instead of logging
         throw new \Xoops\RegDom\Exception\PslCacheNotFoundException('No valid PSL cache found. Run `composer update-psl` to generate one.');
-        // The return statement below is now unreachable but kept for static analysis clarity.
-        return ['NORMAL' => [], 'WILDCARD' => [], 'EXCEPTION' => []];
     }
 
     /**
