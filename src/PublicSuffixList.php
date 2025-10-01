@@ -188,4 +188,15 @@ class PublicSuffixList
 
         return $domain;
     }
+
+    /**
+     * Checks if a domain is an explicit exception in the PSL.
+     * @param string $domain The domain to check.
+     * @return bool
+     */
+    public function isException(string $domain): bool
+    {
+        $domain = $this->normalizeDomain($domain);
+        return isset(self::$rules['EXCEPTION'][$domain]);
+    }
 }

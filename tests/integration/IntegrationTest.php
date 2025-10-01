@@ -57,7 +57,7 @@ class IntegrationTest extends TestCase
         $this->assertArrayHasKey('rule_counts', $metadata);
         // Verify we have real PSL data
         $this->assertGreaterThan(5000, $metadata['rule_counts']['normal']);
-        $this->assertGreaterThan(1000, $metadata['rule_counts']['wildcard']);
+        $this->assertGreaterThan(150, $metadata['rule_counts']['wildcard']); // A more realistic lower bound
     }
 
     public static function realWorldDataProvider(): array

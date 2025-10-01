@@ -41,6 +41,11 @@ class RegisteredDomain
             return null;
         }
 
+        // Add a check for exception rules first
+        if ($this->psl->isException($normalizedHost)) {
+            return $normalizedHost;
+        }
+
         $hostAscii = self::toAscii($normalizedHost);
         $publicSuffix = $this->psl->getPublicSuffix($hostAscii);
 
@@ -48,8 +53,6 @@ class RegisteredDomain
             return null;
         }
 
-        // FINAL FIX: This logic correctly finds the registrable domain by counting
-        // the parts of the public suffix and taking one additional label from the host.
         $hostParts = explode('.', $hostAscii);
         $suffixParts = explode('.', $publicSuffix);
         $registrableParts = array_slice($hostParts, - (count($suffixParts) + 1));
@@ -69,21 +72,33 @@ class RegisteredDomain
         // ... This method is already correct from the previous step ...
         $host   = self::normalizeHost($host);
         $domain = self::normalizeHost(ltrim($domain, '.'));
-        if ($domain === '') return true;
-        if ($domain === 'localhost') return false;
-        if (filter_var($host, FILTER_VALIDATE_IP) || filter_var($domain, FILTER_VALIDATE_IP)) return false;
+        if ($domain === '') {
+            return true;
+        }
+        if ($domain === 'localhost') {
+            return false;
+        }
+        if (filter_var($host, FILTER_VALIDATE_IP) || filter_var($domain, FILTER_VALIDATE_IP)) {
+            return false;
+        }
         $usePSL = !defined('XOOPS_COOKIE_DOMAIN_USE_PSL') || XOOPS_COOKIE_DOMAIN_USE_PSL;
         if ($usePSL) {
             self::$pslInstance ??= new PublicSuffixList();
-            if (self::$pslInstance->isPublicSuffix($domain)) return false;
+            if (self::$pslInstance->isPublicSuffix($domain)) {
+                return false;
+            }
             $regdomInstance = new self(self::$pslInstance);
             $hostRegisteredDomain = $regdomInstance->getRegisteredDomain($host, false);
             $domainRegisteredDomain = $regdomInstance->getRegisteredDomain($domain, false);
-            if ($hostRegisteredDomain && $domainRegisteredDomain && $hostRegisteredDomain !== $domainRegisteredDomain) return false;
+            if ($hostRegisteredDomain && $domainRegisteredDomain && $hostRegisteredDomain !== $domainRegisteredDomain) {
+                return false;
+            }
         }
         $host   = self::toAscii($host);
         $domain = self::toAscii($domain);
-        if ($host === $domain) return true;
+        if ($host === $domain) {
+            return true;
+        }
         return (strlen($host) > strlen($domain)) && (substr_compare($host, '.' . $domain, -1 - strlen($domain)) === 0);
     }
 
@@ -91,9 +106,13 @@ class RegisteredDomain
     {
         // This method is already correct from the previous step
         $host = (strpos($input, '/') !== false) ? parse_url($input, PHP_URL_HOST) : $input;
-        if (!is_string($host)) $host = '';
+        if (!is_string($host)) {
+            $host = '';
+        }
         $host = trim(mb_strtolower($host, 'UTF-8'));
-        if ($host !== '' && $host[0] === '[') $host = trim($host, '[]');
+        if ($host !== '' && $host[0] === '[') {
+            $host = trim($host, '[]');
+        }
         $host = preg_replace('/:\d+$/', '', $host) ?? $host;
         return rtrim($host, '.');
     }
@@ -101,7 +120,9 @@ class RegisteredDomain
     private static function toAscii(string $host): string
     {
         // This method is already correct
-        if ($host === '') return '';
+        if ($host === '') {
+            return '';
+        }
         return function_exists('idn_to_ascii') ? (idn_to_ascii($host, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46) ?: $host) : $host;
     }
 }
