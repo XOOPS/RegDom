@@ -58,7 +58,7 @@ class RegisteredDomainTest extends TestCase
             // Find longest matching suffix
             $longestMatch = null;
             foreach ($suffixes as $suffix => $result) {
-                if (substr($h, -strlen($suffix)) === $suffix) {
+                if (str_ends_with($h, $suffix)) {
                     if ($longestMatch === null || strlen($suffix) > strlen($longestMatch)) {
                         $longestMatch = $result;
                     }
@@ -107,6 +107,10 @@ class RegisteredDomainTest extends TestCase
             'empty string' => ['', null],
             'localhost' => ['localhost', null],
             'IP address' => ['192.168.1.1', null],
+            'trailing dot' => ['example.com.', 'example.com'],
+            'url with port' => ['https://example.com:8080/path', 'example.com'],
+            'host with port no scheme' => ['example.com:443', 'example.com'],
+            'IPv6 bracketed' => ['[::1]', null],
         ];
     }
 
