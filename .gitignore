@@ -21,3 +21,8 @@ build/
 
 # Downloaded PSL data (can be re-downloaded)
 data/public_suffix_list.dat
+
+# Claude local files
+CLAUDE.md
+.claude/
+docs/tasks.md
