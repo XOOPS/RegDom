@@ -22,6 +22,9 @@ build/
 # Downloaded PSL data (can be re-downloaded)
 data/public_suffix_list.dat
 
+# Composer patches plugin (not used by this project)
+patches.lock.json
+
 # Claude local files
 CLAUDE.md
 .claude/

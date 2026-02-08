@@ -4,7 +4,15 @@ namespace Xoops\RegDom\Tests;
 
 use Xoops\RegDom\PublicSuffixList;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
+/**
+ * Unit tests for PublicSuffixList edge-case behavior.
+ *
+ * These tests validate input handling (empty strings, IP addresses)
+ * rather than real PSL data. For tests that verify behavior against actual PSL
+ * entries, see tests/integration/PublicSuffixListIntegrationTest.php.
+ */
 class PublicSuffixListTest extends TestCase
 {
     private PublicSuffixList $psl;
@@ -14,36 +22,12 @@ class PublicSuffixListTest extends TestCase
         $this->psl = new PublicSuffixList();
     }
 
-    public function testIsPublicSuffix(): void
+    protected function tearDown(): void
     {
-        $this->assertTrue($this->psl->isPublicSuffix('com'));
-        $this->assertTrue($this->psl->isPublicSuffix('co.uk'));
-        $this->assertFalse($this->psl->isPublicSuffix('example.com'));
-        $this->assertFalse($this->psl->isPublicSuffix('parliament.uk')); // Regular domain, not a public suffix
-        $this->assertTrue($this->psl->isPublicSuffix('anything.ck'));    // Wildcard rule
-    }
-
-    public function testGetPublicSuffix(): void
-    {
-        $this->assertSame('com', $this->psl->getPublicSuffix('example.com'));
-        $this->assertSame('co.uk', $this->psl->getPublicSuffix('www.example.co.uk'));
-        $this->assertSame('uk', $this->psl->getPublicSuffix('example.parliament.uk'));
-        $this->assertSame('something.ck', $this->psl->getPublicSuffix('sub.something.ck'));
-        $this->assertSame('com', $this->psl->getPublicSuffix('com'));
-    }
-
-    public function testGetMetadata(): void
-    {
-        $metadata = $this->psl->getMetadata();
-        $this->assertIsArray($metadata);
-        $this->assertArrayHasKey('active_cache', $metadata);
-        $this->assertArrayHasKey('last_updated', $metadata);
-        $this->assertArrayHasKey('days_old', $metadata);
-        $this->assertArrayHasKey('rule_counts', $metadata);
-        $this->assertArrayHasKey('needs_update', $metadata);
-        $this->assertGreaterThan(1000, $metadata['rule_counts']['normal']);
-        $this->assertGreaterThan(0, $metadata['rule_counts']['wildcard']);
-        $this->assertGreaterThan(0, $metadata['rule_counts']['exception']);
+        // Reset static PSL cache to prevent cross-test leakage
+        $ref = new ReflectionProperty(PublicSuffixList::class, 'rules');
+        $ref->setAccessible(true);
+        $ref->setValue(null, null);
     }
 
     public function testIsPublicSuffixWithEmptyString(): void
@@ -64,21 +48,5 @@ class PublicSuffixListTest extends TestCase
     public function testGetPublicSuffixWithIpAddress(): void
     {
         $this->assertNull($this->psl->getPublicSuffix('192.168.1.1'));
-    }
-
-    public function testIsException(): void
-    {
-        $this->assertTrue($this->psl->isException('www.ck'));
-        $this->assertTrue($this->psl->isException('city.kawasaki.jp'));
-        $this->assertFalse($this->psl->isException('com'));
-        $this->assertFalse($this->psl->isException('example.com'));
-        $this->assertFalse($this->psl->isException(''));
-    }
-
-    public function testNormalizeDomainHandlesLeadingAndTrailingDots(): void
-    {
-        // Leading/trailing dots should be stripped during normalization
-        $this->assertTrue($this->psl->isPublicSuffix('.com.'));
-        $this->assertTrue($this->psl->isPublicSuffix('COM'));
     }
 }

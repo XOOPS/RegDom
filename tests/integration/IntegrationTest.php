@@ -70,6 +70,11 @@ class IntegrationTest extends TestCase
             'Unicode' => ['www.münchen.de', 'münchen.de'],
             'Punycode' => ['www.xn--mnchen-3ya.de', 'münchen.de'],
             'Public Suffix' => ['co.uk', null],
+            'IDN PS Unicode' => ['test.公司.cn', 'test.公司.cn'],        // 公司.cn is a PS
+            'IDN PS punycode' => ['test.xn--55qx5d.cn', 'test.公司.cn'], // punycode PS
+            'IDN PS itself' => ['公司.cn', null],                        // PS alone → null
+            'Japan exception sub' => ['sub.city.kawasaki.jp', 'city.kawasaki.jp'],
+            'CK exception sub' => ['sub.www.ck', 'www.ck'],
         ];
     }
 }

@@ -130,7 +130,9 @@ class PublicSuffixList
         for ($i = 0; $i < $n; $i++) {
             $testSuffix = implode('.', array_slice($parts, $i));
             if (isset(self::$rules['EXCEPTION'][$testSuffix])) {
-                return $i > 0 ? implode('.', array_slice($parts, $i - 1)) : null;
+                // PSL exception: the public suffix is the exception rule minus its leftmost label.
+                // e.g. exception "!city.kawasaki.jp" → public suffix is "kawasaki.jp"
+                return ($i + 1 < $n) ? implode('.', array_slice($parts, $i + 1)) : null;
             }
             if (isset(self::$rules['NORMAL'][$testSuffix])) {
                 return $testSuffix;

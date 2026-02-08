@@ -1,6 +1,9 @@
 name: CI
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: PHP ${{ matrix.php }}${{ matrix.deps && format(' / {0}', matrix.deps) || '' }}${{ matrix.coverage && ' / Coverage' || '' }}
@@ -73,11 +76,15 @@ jobs:
         run: mkdir -p build/logs
 
       - name: Run all CI checks
+        if: ${{ !matrix.coverage }}
         run: composer ci
 
-      - name: Generate coverage report
+      - name: Run CI checks with coverage
         if: ${{ matrix.coverage }}
-        run: ./vendor/bin/phpunit --colors=always --coverage-clover build/logs/clover.xml
+        run: |
+          composer lint
+          composer analyse
+          ./vendor/bin/phpunit --colors=always --coverage-clover build/logs/clover.xml
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.coverage }}
