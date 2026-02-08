@@ -75,6 +75,10 @@ jobs:
       - name: Run all CI checks
         run: composer ci
 
+      - name: Generate coverage report
+        if: ${{ matrix.coverage }}
+        run: phpunit --colors=always --coverage-clover build/logs/clover.xml
+
       - name: Upload coverage to Codecov
         if: ${{ matrix.coverage }}
         uses: codecov/codecov-action@v5

@@ -75,7 +75,7 @@ class PublicSuffixListTest extends TestCase
         $this->assertFalse($this->psl->isException(''));
     }
 
-    public function testNormalizeDomainHandsLeadingAndTrailingDots(): void
+    public function testNormalizeDomainHandlesLeadingAndTrailingDots(): void
     {
         // Leading/trailing dots should be stripped during normalization
         $this->assertTrue($this->psl->isPublicSuffix('.com.'));
