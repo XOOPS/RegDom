@@ -5,7 +5,6 @@ jobs:
   tests:
     name: PHP ${{ matrix.php }}${{ matrix.deps && format(' / {0}', matrix.deps) || '' }}${{ matrix.coverage && ' / Coverage' || '' }}
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental || false }}
 
     strategy:
       fail-fast: false
@@ -22,7 +21,6 @@ jobs:
           - php: "8.3"
           - php: "8.4"
           - php: "8.5"
-            experimental: true
           # Coverage run
           - php: "8.3"
             coverage: true

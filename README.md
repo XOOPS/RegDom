@@ -1,3 +1,5 @@
+![alt XOOPS CMS](https://xoops.org/images/logoXoops4GithubRepository.png)
+
 # RegDom - Registered Domain Check in PHP
 
 Object oriented PHP library for querying Mozilla's Public Suffix List to
