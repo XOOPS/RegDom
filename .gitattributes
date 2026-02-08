@@ -25,4 +25,6 @@ phpcs.xml export-ignore
 phpunit.xml.dist export-ignore
 phpstan.neon export-ignore
 qodana.yaml export-ignore
+renovate.json export-ignore
+.coderabbit.yaml export-ignore
 CLAUDE.md export-ignore
