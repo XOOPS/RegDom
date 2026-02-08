@@ -1,4 +1,3 @@
-# .scrutinizer.yml
 build:
   nodes:
     analysis:
@@ -6,52 +5,12 @@ build:
         override:
           - php-scrutinizer-run
 
-    php74:
-      environment:
-        php: 7.4
-      tests:
-        override:
-          - command: php -v
-
-    php80:
-      environment:
-        php: 8.0
-      tests:
-        override:
-          - command: php -v
-
-    php81:
-      environment:
-        php: 8.1
-      tests:
-        override:
-          - command: php -v
-
-    php82:
-      environment:
-        php: 8.2
-      tests:
-        override:
-          - command: php -v
-
-#    php83:
-#      environment:
-#        php: 8.3
-#      tests:
-#        override:
-#          - command: php -v
-
-#    php84:
-#      environment:
-#        php: 8.4
-#      tests:
-#        override:
-#          - command: php -v
 filter:
-    excluded_paths:
-        - '_archive/*'
-        - 'tests/*'
+  excluded_paths:
+    - '_archive/*'
+    - 'tests/*'
+    - 'vendor/*'
+    - 'docs/*'
+
 tools:
   php_analyzer: true
-#    external_code_coverage:
-#        timeout: 300    # Timeout in seconds.

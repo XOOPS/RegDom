@@ -1,5 +1,8 @@
 #!/usr/bin/env php
 <?php
+
+declare(strict_types=1);
+
 /**
  * XOOPS RegDom Public Suffix List Updater
  *
@@ -9,6 +12,14 @@
  * @license The PSL is licensed under MPL-2.0 by Mozilla Foundation
  * @source  https://publicsuffix.org/
  */
+
+// Load Composer autoloader (provides polyfills for PHP 7.4)
+foreach ([__DIR__ . '/../vendor/autoload.php', __DIR__ . '/../../../autoload.php'] as $autoload) {
+    if (file_exists($autoload)) {
+        require_once $autoload;
+        break;
+    }
+}
 
 echo "Updating XOOPS RegDom Public Suffix List...\n";
 
@@ -64,9 +75,9 @@ $lines = explode("\n", $latestList);
 $rules = ['NORMAL' => [], 'WILDCARD' => [], 'EXCEPTION' => []];
 foreach ($lines as $line) {
     $line = trim($line);
-    if (empty($line) || strpos($line, '//') === 0) continue;
-    if (strpos($line, '!') === 0) $rules['EXCEPTION'][substr($line, 1)] = true;
-    elseif (strpos($line, '*.') === 0) $rules['WILDCARD'][substr($line, 2)] = true;
+    if (empty($line) || str_starts_with($line, '//')) continue;
+    if (str_starts_with($line, '!')) $rules['EXCEPTION'][substr($line, 1)] = true;
+    elseif (str_starts_with($line, '*.')) $rules['WILDCARD'][substr($line, 2)] = true;
     else $rules['NORMAL'][$line] = true;
 }
 
@@ -86,16 +97,13 @@ if ($runtimeCachePath) $writePaths['runtime'] = $runtimeCachePath;
 foreach ($writePaths as $type => $cachePath) {
     $tmpPath = $cachePath . '.tmp.' . getmypid();
     if (file_put_contents($tmpPath, $cacheContent, LOCK_EX) && rename($tmpPath, $cachePath)) {
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($cachePath, true);
+        }
         echo "SUCCESS: {$type} cache updated with {$totalRules} rules.\n";
     } else {
         echo "WARNING: Could not write {$type} cache to {$cachePath}.\n";
-        // Attempt to delete the temporary file.
-        if (file_exists($tmpPath) && !unlink($tmpPath)) {
-            // If unlink() fails, throw an exception to halt execution and signal an error.
-            throw new \RuntimeException(
-                    "CRITICAL: Failed to delete temporary file at: {$tmpPath}. Please check file permissions."
-            );
-        }
+        @unlink($tmpPath);
     }
 }
 
