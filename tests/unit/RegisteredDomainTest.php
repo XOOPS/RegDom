@@ -116,6 +116,9 @@ class RegisteredDomainTest extends TestCase
             'IPv6 bracketed with port' => ['[::1]:443', null],
             'IPv6 full form' => ['[2001:db8::1]', null],
             'IPv6 full form with port' => ['[2001:db8::1]:8080', null],
+            'IPv6 URL with port' => ['http://[::1]:443/path', null],
+            'IPv6 URL no port' => ['http://[::1]/path', null],
+            'IPv6 URL full form' => ['https://[2001:db8::1]:8080/path', null],
         ];
     }
 

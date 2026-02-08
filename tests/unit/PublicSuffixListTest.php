@@ -86,20 +86,35 @@ class PublicSuffixListTest extends TestCase
         $this->assertFalse($this->psl->isException(''));
     }
 
-    public function testIsPublicSuffixWithIdnDomains(): void
+    public function testIsPublicSuffixWithPunycodeDomains(): void
     {
-        // IDN public suffixes stored as punycode in cache must be matched
-        // when queried with Unicode input (normalizeDomain converts to punycode)
+        // Punycode form works regardless of ext-intl
+        $this->assertTrue($this->psl->isPublicSuffix('xn--55qx5d.cn'));     // 公司.cn in punycode
+    }
+
+    /**
+     * @requires extension intl
+     */
+    public function testIsPublicSuffixWithUnicodeIdnDomains(): void
+    {
+        // Unicode input requires ext-intl for idn_to_ascii() conversion
         $this->assertTrue($this->psl->isPublicSuffix('公司.cn'));            // xn--55qx5d.cn
-        $this->assertTrue($this->psl->isPublicSuffix('xn--55qx5d.cn'));     // punycode form
         $this->assertFalse($this->psl->isPublicSuffix('test.公司.cn'));      // not a PS itself
     }
 
-    public function testGetPublicSuffixWithIdnDomains(): void
+    public function testGetPublicSuffixWithPunycodeDomains(): void
     {
-        // Public suffix for an IDN subdomain should return the punycode PS
-        $this->assertSame('xn--55qx5d.cn', $this->psl->getPublicSuffix('test.公司.cn'));
+        // Punycode form works regardless of ext-intl
         $this->assertSame('xn--55qx5d.cn', $this->psl->getPublicSuffix('test.xn--55qx5d.cn'));
+    }
+
+    /**
+     * @requires extension intl
+     */
+    public function testGetPublicSuffixWithUnicodeIdnDomains(): void
+    {
+        // Unicode input requires ext-intl for idn_to_ascii() conversion
+        $this->assertSame('xn--55qx5d.cn', $this->psl->getPublicSuffix('test.公司.cn'));
     }
 
     public function testNormalizeDomainHandlesLeadingAndTrailingDots(): void

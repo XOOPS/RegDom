@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Bug Fixes
 * Fix `getPublicSuffix()` PSL exception-rule handling — exception branch returned one label too many; now correctly returns the exception rule minus its leftmost label (e.g. `!city.kawasaki.jp` yields public suffix `kawasaki.jp`, not `city.kawasaki.jp`)
 * Fix `normalizeHost()` corrupting IPv6 addresses — the port-stripping regex `/:\d+$/` mistakenly treated the last hextet of addresses like `::1` as a port, truncating them; IPv6 literals are now parsed bracket-aware
-* Fix PSL cache storing IDN rules as Unicode — `bin/update-psl.php` now normalises all rules to ASCII/punycode via `idn_to_ascii()`, matching the form used by `normalizeDomain()` at runtime; previously 457 Unicode keys were unreachable when `ext-intl` was loaded
+* Fix PSL cache storing IDN rules as Unicode — `bin/update-psl.php` now normalizes all rules to ASCII/punycode via `idn_to_ascii()`, matching the form used by `normalizeDomain()` at runtime; previously 457 Unicode keys were unreachable when `ext-intl` was loaded
 * Fix `composer.json` PHP constraint from `"^7.4 || ^8.5"` to `"^7.4 || ^8.0"` (previously excluded PHP 8.0–8.4)
 * Fix `normalizeDomain()` crash on empty string — `idn_to_ascii('')` throws `ValueError` on PHP 8.4+; added `$domain !== ''` guard
 * Fix PSL exception tests referencing `parliament.uk` (removed from the PSL); replaced with stable entries (`www.ck`, `city.kawasaki.jp`)
@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Tests
 * Add PSL exception-rule regression tests — `sub.city.kawasaki.jp`, `city.kawasaki.jp`, `sub.www.ck`, `www.ck` for both `getPublicSuffix()` and `getRegisteredDomain()`
-* Add IPv6 normalisation tests — `[::1]`, `[::1]:443`, `[2001:db8::1]:8080` for `getRegisteredDomain()` and `domainMatches()`
+* Add IPv6 normalization tests — `[::1]`, `[::1]:443`, `[2001:db8::1]:8080` for `getRegisteredDomain()` and `domainMatches()`
 * Add IDN/punycode PSL cache tests — `公司.cn`, `xn--55qx5d.cn` for `isPublicSuffix()` and `getPublicSuffix()`
 * Add IDN integration tests — `test.公司.cn`, `test.xn--55qx5d.cn`, `公司.cn` through the full `RegisteredDomain` stack
 * Add `PslCacheNotFoundExceptionTest` — exception class, message, code, previous exception

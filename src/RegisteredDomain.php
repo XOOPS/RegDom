@@ -119,7 +119,7 @@ class RegisteredDomain
         }
         $host = trim(mb_strtolower($host, 'UTF-8'));
         if ($host !== '' && $host[0] === '[') {
-            // IPv6 literal, e.g. [::1] or [::1]:443
+            // Bracketed IPv6 literal, e.g. [::1] or [::1]:443
             // Extract the address between brackets, discarding any trailing port.
             if (preg_match('/^\[([^\]]+)]/', $host, $m)) {
                 $host = $m[1];
@@ -127,6 +127,9 @@ class RegisteredDomain
                 // Malformed bracket expression — strip brackets as fallback
                 $host = trim($host, '[]');
             }
+        } elseif ($host !== '' && filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            // Unbracketed IPv6 — parse_url() returns IPv6 without brackets.
+            // Skip port stripping to avoid corrupting the address.
         } else {
             // Non-IPv6: strip trailing :port (e.g. example.com:8080 → example.com)
             $host = preg_replace('/:\d+$/', '', $host) ?? $host;
