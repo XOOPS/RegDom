@@ -4,6 +4,7 @@ namespace Xoops\RegDom\Tests;
 
 use Xoops\RegDom\PublicSuffixList;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 /**
  * Unit tests for PublicSuffixList edge-case behavior.
@@ -24,7 +25,7 @@ class PublicSuffixListTest extends TestCase
     protected function tearDown(): void
     {
         // Reset static PSL cache to prevent cross-test leakage
-        $ref = new \ReflectionProperty(PublicSuffixList::class, 'rules');
+        $ref = new ReflectionProperty(PublicSuffixList::class, 'rules');
         $ref->setAccessible(true);
         $ref->setValue(null, null);
     }

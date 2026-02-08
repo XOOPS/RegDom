@@ -4,6 +4,7 @@ namespace Xoops\RegDom\Tests\Integration;
 
 use Xoops\RegDom\PublicSuffixList;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 /**
  * Integration tests for PublicSuffixList that validate behavior against real PSL data.
@@ -26,7 +27,7 @@ class PublicSuffixListIntegrationTest extends TestCase
     protected function tearDown(): void
     {
         // Reset static PSL cache to prevent cross-test leakage
-        $ref = new \ReflectionProperty(PublicSuffixList::class, 'rules');
+        $ref = new ReflectionProperty(PublicSuffixList::class, 'rules');
         $ref->setAccessible(true);
         $ref->setValue(null, null);
     }
