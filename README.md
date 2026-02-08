@@ -117,5 +117,9 @@ Marcus Bointon's adapted code: https://github.com/Synchro/regdom-php
 
 ## License
 
-Licensed under Apache License 2.0 or Mozilla Public License 2.0 (dual-licensed).
-See [LICENSE.txt](LICENSE.txt) for details.
+The PHP library code in this repository is licensed under the Apache License 2.0.
+See [LICENSE.txt](LICENSE.txt) for the full Apache 2.0 license text.
+
+The bundled Public Suffix List data/cache is derived from Mozilla's Public Suffix List
+and is available under the Mozilla Public License 2.0 (MPL-2.0). For details, see
+https://www.mozilla.org/en-US/MPL/2.0/ and https://publicsuffix.org/.

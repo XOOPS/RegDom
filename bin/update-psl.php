@@ -71,14 +71,38 @@ if ($latestList === false || $statusCode !== 200) {
 
 // --- Parse and Generate Cache ---
 echo "Parsing rules...\n";
+
+// Normalize rule keys to ASCII/punycode so they match the form used by
+// PublicSuffixList::normalizeDomain() at runtime (which calls idn_to_ascii).
+$hasIntl = function_exists('idn_to_ascii');
+if (!$hasIntl) {
+    echo "WARNING: ext-intl not available — IDN rules will be stored as Unicode.\n";
+    echo "         Install ext-intl for correct internationalized domain handling.\n";
+}
+
+/**
+ * @param string $rule Raw rule text from the PSL (may be Unicode)
+ * @return string Normalised key (punycode when ext-intl is available)
+ */
+$normalizeRule = static function (string $rule) use ($hasIntl): string {
+    $rule = strtolower($rule);
+    if ($hasIntl) {
+        $ascii = idn_to_ascii($rule, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+        if ($ascii !== false) {
+            return $ascii;
+        }
+    }
+    return $rule;
+};
+
 $lines = explode("\n", $latestList);
 $rules = ['NORMAL' => [], 'WILDCARD' => [], 'EXCEPTION' => []];
 foreach ($lines as $line) {
     $line = trim($line);
     if (empty($line) || str_starts_with($line, '//')) continue;
-    if (str_starts_with($line, '!')) $rules['EXCEPTION'][substr($line, 1)] = true;
-    elseif (str_starts_with($line, '*.')) $rules['WILDCARD'][substr($line, 2)] = true;
-    else $rules['NORMAL'][$line] = true;
+    if (str_starts_with($line, '!')) $rules['EXCEPTION'][$normalizeRule(substr($line, 1))] = true;
+    elseif (str_starts_with($line, '*.')) $rules['WILDCARD'][$normalizeRule(substr($line, 2))] = true;
+    else $rules['NORMAL'][$normalizeRule($line)] = true;
 }
 
 $totalRules = count($rules['NORMAL']) + count($rules['WILDCARD']) + count($rules['EXCEPTION']);
@@ -103,7 +127,9 @@ foreach ($writePaths as $type => $cachePath) {
         echo "SUCCESS: {$type} cache updated with {$totalRules} rules.\n";
     } else {
         echo "WARNING: Could not write {$type} cache to {$cachePath}.\n";
-        @unlink($tmpPath);
+        if (file_exists($tmpPath)) {
+            unlink($tmpPath);
+        }
     }
 }
 

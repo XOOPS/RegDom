@@ -32,6 +32,17 @@ class PublicSuffixListTest extends TestCase
         $this->assertSame('com', $this->psl->getPublicSuffix('com'));
     }
 
+    public function testGetPublicSuffixWithExceptionRules(): void
+    {
+        // PSL exception: !city.kawasaki.jp → public suffix is kawasaki.jp
+        $this->assertSame('kawasaki.jp', $this->psl->getPublicSuffix('sub.city.kawasaki.jp'));
+        $this->assertSame('kawasaki.jp', $this->psl->getPublicSuffix('city.kawasaki.jp'));
+
+        // PSL exception: !www.ck → public suffix is ck
+        $this->assertSame('ck', $this->psl->getPublicSuffix('sub.www.ck'));
+        $this->assertSame('ck', $this->psl->getPublicSuffix('www.ck'));
+    }
+
     public function testGetMetadata(): void
     {
         $metadata = $this->psl->getMetadata();
@@ -73,6 +84,22 @@ class PublicSuffixListTest extends TestCase
         $this->assertFalse($this->psl->isException('com'));
         $this->assertFalse($this->psl->isException('example.com'));
         $this->assertFalse($this->psl->isException(''));
+    }
+
+    public function testIsPublicSuffixWithIdnDomains(): void
+    {
+        // IDN public suffixes stored as punycode in cache must be matched
+        // when queried with Unicode input (normalizeDomain converts to punycode)
+        $this->assertTrue($this->psl->isPublicSuffix('公司.cn'));            // xn--55qx5d.cn
+        $this->assertTrue($this->psl->isPublicSuffix('xn--55qx5d.cn'));     // punycode form
+        $this->assertFalse($this->psl->isPublicSuffix('test.公司.cn'));      // not a PS itself
+    }
+
+    public function testGetPublicSuffixWithIdnDomains(): void
+    {
+        // Public suffix for an IDN subdomain should return the punycode PS
+        $this->assertSame('xn--55qx5d.cn', $this->psl->getPublicSuffix('test.公司.cn'));
+        $this->assertSame('xn--55qx5d.cn', $this->psl->getPublicSuffix('test.xn--55qx5d.cn'));
     }
 
     public function testNormalizeDomainHandlesLeadingAndTrailingDots(): void

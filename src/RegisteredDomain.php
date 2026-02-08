@@ -119,9 +119,18 @@ class RegisteredDomain
         }
         $host = trim(mb_strtolower($host, 'UTF-8'));
         if ($host !== '' && $host[0] === '[') {
-            $host = trim($host, '[]');
+            // IPv6 literal, e.g. [::1] or [::1]:443
+            // Extract the address between brackets, discarding any trailing port.
+            if (preg_match('/^\[([^\]]+)]/', $host, $m)) {
+                $host = $m[1];
+            } else {
+                // Malformed bracket expression — strip brackets as fallback
+                $host = trim($host, '[]');
+            }
+        } else {
+            // Non-IPv6: strip trailing :port (e.g. example.com:8080 → example.com)
+            $host = preg_replace('/:\d+$/', '', $host) ?? $host;
         }
-        $host = preg_replace('/:\d+$/', '', $host) ?? $host;
         return rtrim($host, '.');
     }
 

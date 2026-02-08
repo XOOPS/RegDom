@@ -37,12 +37,12 @@ class RegisteredDomainTest extends TestCase
                 return null;
             }
 
-            // Exception rules: return suffix one level up
-            if ($h === 'city.kawasaki.jp') {
-                return 'kawasaki.jp';  // So city.kawasaki.jp is registrable
+            // Exception rules: the public suffix is the exception minus its leftmost label
+            if ($h === 'city.kawasaki.jp' || $h === 'sub.city.kawasaki.jp') {
+                return 'kawasaki.jp';
             }
-            if ($h === 'www.ck') {
-                return 'ck';  // So www.ck is registrable
+            if ($h === 'www.ck' || $h === 'sub.www.ck') {
+                return 'ck';
             }
 
             // Standard suffix map
@@ -100,6 +100,8 @@ class RegisteredDomainTest extends TestCase
             'unlisted tld' => ['example.example', null],
             'wildcard exception' => ['www.ck', 'www.ck'],
             'PSL exception rule' => ['city.kawasaki.jp', 'city.kawasaki.jp'],
+            'PSL exception subdomain' => ['sub.city.kawasaki.jp', 'city.kawasaki.jp'],
+            'PSL exception subdomain ck' => ['sub.www.ck', 'www.ck'],
             'IDN simple' => ['食狮.com.cn', '食狮.com.cn'],
             'IDN multi-level' => ['www.食狮.公司.cn', '食狮.公司.cn'],
             'IDN punycode' => ['www.xn--85x722f.xn--55qx5d.cn', '食狮.公司.cn'],
@@ -111,6 +113,9 @@ class RegisteredDomainTest extends TestCase
             'url with port' => ['https://example.com:8080/path', 'example.com'],
             'host with port no scheme' => ['example.com:443', 'example.com'],
             'IPv6 bracketed' => ['[::1]', null],
+            'IPv6 bracketed with port' => ['[::1]:443', null],
+            'IPv6 full form' => ['[2001:db8::1]', null],
+            'IPv6 full form with port' => ['[2001:db8::1]:8080', null],
         ];
     }
 
@@ -129,6 +134,8 @@ class RegisteredDomainTest extends TestCase
             'leading dot ignored' => ['example.com', '.example.com', true],
             'port stripped' => ['example.com:8080', 'example.com', true],
             'idn match' => ['münchen.de', 'münchen.de', true],
+            'IPv6 host rejected' => ['[::1]', '::1', false],
+            'IPv6 host with port rejected' => ['[::1]:443', '::1', false],
         ];
     }
 }
