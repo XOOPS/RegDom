@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Unit tests for PublicSuffixList edge-case behavior.
  *
- * These tests validate input handling (empty strings, IP addresses, normalization)
+ * These tests validate input handling (empty strings, IP addresses)
  * rather than real PSL data. For tests that verify behavior against actual PSL
  * entries, see tests/integration/PublicSuffixListIntegrationTest.php.
  */
@@ -19,6 +19,14 @@ class PublicSuffixListTest extends TestCase
     protected function setUp(): void
     {
         $this->psl = new PublicSuffixList();
+    }
+
+    protected function tearDown(): void
+    {
+        // Reset static PSL cache to prevent cross-test leakage
+        $ref = new \ReflectionProperty(PublicSuffixList::class, 'rules');
+        $ref->setAccessible(true);
+        $ref->setValue(null, null);
     }
 
     public function testIsPublicSuffixWithEmptyString(): void
@@ -39,12 +47,5 @@ class PublicSuffixListTest extends TestCase
     public function testGetPublicSuffixWithIpAddress(): void
     {
         $this->assertNull($this->psl->getPublicSuffix('192.168.1.1'));
-    }
-
-    public function testNormalizeDomainHandlesLeadingAndTrailingDots(): void
-    {
-        // Leading/trailing dots should be stripped during normalization
-        $this->assertTrue($this->psl->isPublicSuffix('.com.'));
-        $this->assertTrue($this->psl->isPublicSuffix('COM'));
     }
 }

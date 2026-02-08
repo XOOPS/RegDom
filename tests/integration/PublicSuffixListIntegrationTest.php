@@ -23,6 +23,14 @@ class PublicSuffixListIntegrationTest extends TestCase
         $this->psl = new PublicSuffixList();
     }
 
+    protected function tearDown(): void
+    {
+        // Reset static PSL cache to prevent cross-test leakage
+        $ref = new \ReflectionProperty(PublicSuffixList::class, 'rules');
+        $ref->setAccessible(true);
+        $ref->setValue(null, null);
+    }
+
     public function testIsPublicSuffix(): void
     {
         $this->assertTrue($this->psl->isPublicSuffix('com'));
@@ -104,5 +112,12 @@ class PublicSuffixListIntegrationTest extends TestCase
     {
         // Unicode input requires ext-intl for idn_to_ascii() conversion
         $this->assertSame('xn--55qx5d.cn', $this->psl->getPublicSuffix('test.公司.cn'));
+    }
+
+    public function testNormalizeDomainHandlesLeadingAndTrailingDots(): void
+    {
+        // Leading/trailing dots should be stripped during normalization
+        $this->assertTrue($this->psl->isPublicSuffix('.com.'));
+        $this->assertTrue($this->psl->isPublicSuffix('COM'));
     }
 }
