@@ -6,7 +6,7 @@ RegDom is a XOOPS library that parses domain names using the Mozilla Public Suff
 
 ## Project Layout
 
-```
+```text
 src/                          # Library source code
   RegisteredDomain.php        # Main class: extracts registrable domains, validates cookie domains
   PublicSuffixList.php         # PSL cache loader and query engine (NORMAL/WILDCARD/EXCEPTION rules)

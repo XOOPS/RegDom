@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [2.0.2-beta3] - 2026-02-08
 
 ### Bug Fixes
 * Fix `getPublicSuffix()` PSL exception-rule handling — exception branch returned one label too many; now correctly returns the exception rule minus its leftmost label (e.g. `!city.kawasaki.jp` yields public suffix `kawasaki.jp`, not `city.kawasaki.jp`)

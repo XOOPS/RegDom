@@ -1,6 +1,9 @@
 name: CI
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: PHP ${{ matrix.php }}${{ matrix.deps && format(' / {0}', matrix.deps) || '' }}${{ matrix.coverage && ' / Coverage' || '' }}

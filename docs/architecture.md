@@ -5,7 +5,7 @@ the PSL cache format, rule matching logic, domain normalization, and the update 
 
 ## Project Structure
 
-```
+```text
 src/
   RegisteredDomain.php            Main API class
   PublicSuffixList.php             PSL cache loader and query engine
@@ -108,7 +108,7 @@ wildcard would otherwise claim it."
 For `getPublicSuffix()`, the public suffix of an exception domain is the exception
 entry minus its leftmost label:
 
-```
+```text
 PSL entry:     !city.kawasaki.jp
 Exception key: city.kawasaki.jp
 Public suffix:        kawasaki.jp   (one label removed)
@@ -152,7 +152,7 @@ Internationalized domain names (IDN) are handled at two levels:
 
 Both conversions require `ext-intl`. When the extension is not available:
 - Punycode input (e.g. `xn--55qx5d.cn`) still works correctly
-- Unicode input (e.g. `xn--55qx5d.cn`) cannot be converted and may not match
+- Unicode input (e.g. `公司.cn`) cannot be converted and may not match
 
 ## PSL Update Pipeline
 
