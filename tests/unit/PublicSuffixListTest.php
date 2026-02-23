@@ -26,7 +26,6 @@ class PublicSuffixListTest extends TestCase
     {
         // Reset static PSL cache to prevent cross-test leakage
         $ref = new ReflectionProperty(PublicSuffixList::class, 'rules');
-        $ref->setAccessible(true);
         $ref->setValue(null, null);
     }
 

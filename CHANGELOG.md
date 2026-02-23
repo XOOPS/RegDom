@@ -3,7 +3,14 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [2.0.2-beta3] - 2026-02-08
+## [2.1.0-beta1] - 2026-02-22
+
+### Breaking Changes
+
+* Require PHP 8.2 as minimum version (was PHP 7.4); remove `symfony/polyfill-php80` and `symfony/polyfill-mbstring` polyfill dependencies
+* Require `ext-mbstring` as a hard dependency (was provided by polyfill)
+* Remove `bin/reloadpsl` convenience script entirely — invoke `bin/update-psl.php` directly instead
+* Require PHPUnit `^11.0` only (was `^9.6 || ^10.0 || ^11.0`)
 
 ### Bug Fixes
 * Fix `getPublicSuffix()` PSL exception-rule handling — exception branch returned one label too many; now correctly returns the exception rule minus its leftmost label (e.g. `!city.kawasaki.jp` yields public suffix `kawasaki.jp`, not `city.kawasaki.jp`)
@@ -13,7 +20,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 * Fix `normalizeDomain()` crash on empty string — `idn_to_ascii('')` throws `ValueError` on PHP 8.4+; added `$domain !== ''` guard
 * Fix PSL exception tests referencing `parliament.uk` (removed from the PSL); replaced with stable entries (`www.ck`, `city.kawasaki.jp`)
 * Fix `bin/update-psl.php` failing when run standalone on PHP 7.4 — `str_starts_with()` was called without loading the polyfill autoloader
-* Fix `bin/reloadpsl` calling removed methods (`clearDataDirectory()`, `getTree()`); rewritten as a simple wrapper
 * Fix `getMetadata()` unreachable statement
 
 ### Security
@@ -24,13 +30,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 * Make `normalizeDomain()` a `private static` method (was instance method)
-* Replace `strpos()`/`substr()` patterns with `str_contains()`/`str_starts_with()`/`str_ends_with()` via `symfony/polyfill-php80`
+* Replace `strpos()`/`substr()` patterns with `str_contains()`/`str_starts_with()`/`str_ends_with()` (native in PHP 8.0)
 * Add `@throws PslCacheNotFoundException` PHPDoc tags to `PublicSuffixList::__construct()` and `loadRules()`
 * Add XOOPS copyright headers to all source files
 * Clarify `README.md` license section — library code is Apache-2.0, bundled PSL data is MPL-2.0
 
 ### Added
-* Add `symfony/polyfill-php80` dependency for `str_contains`, `str_starts_with`, `str_ends_with` on PHP 7.4
 * Add `ext-intl` to `suggest` in `composer.json`
 
 ### Tests
@@ -49,14 +54,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 * Add Composer autoloader bootstrap to `bin/update-psl.php` for standalone execution
 * Add `composer ci` script chaining lint + analyse + test
 * Add `composer update-psl` and `auto-update-psl` scripts with `XOOPS_SKIP_PSL_UPDATE` support
-* Add GitHub Actions CI workflow — PHP 7.4–8.5 matrix, lowest-deps on 7.4, coverage on 8.3
+* Update GitHub Actions CI matrix from PHP 7.4–8.5 to PHP 8.2–8.5; lowest-deps on 8.2, coverage on 8.3
 * Fix CI coverage matrix entry running tests twice — added `if: !matrix.coverage` guard
 * Fix SonarCloud workflow using `secrets` context in step-level `if:` — moved to job-level `env`
 * Add GitHub Copilot custom instructions (`.github/copilot-instructions.md`)
 * Add Dependabot configuration for Composer and GitHub Actions
 * Add Qodana static analysis workflow
 * Add `.editorconfig` (UTF-8, LF, PSR-12 indentation)
-* Remove `xsi:noNamespaceSchemaLocation` from `phpunit.xml.dist` to avoid XSD validation warnings on PHPUnit 9; `<source>` element works natively on PHPUnit 10+/11+
+* Convert test `@dataProvider` annotations to PHPUnit 11 `#[DataProvider]` attributes
+* Convert test `@requires` annotations to `#[RequiresPhpExtension]` attributes
+* Add PHPUnit 11 XSD schema and `cacheDirectory` to `phpunit.xml.dist`
 * Standardize `.gitattributes` with LF enforcement and export-ignore list
 * Standardize `.gitignore` with local config overrides, build artifacts, PHPUnit cache
 * Track `phpcs.xml` in version control (was previously untracked, causing CI lint failure)
@@ -173,7 +180,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 * Import Florian Sager's regdom-php library (Synchro/Marcus Bointon)
 * PHP include file for domain registration data (Synchro/Marcus Bointon)
 
-[2.0.2-beta3]: https://github.com/XOOPS/RegDom/compare/v2.0.2-beta2...HEAD
+[2.1.0-beta1]: https://github.com/XOOPS/RegDom/compare/v2.0.2-beta2...HEAD
 [2.0.2-beta2]: https://github.com/XOOPS/RegDom/compare/v2.0.2-beta1...v2.0.2-beta2
 [2.0.2-beta1]: https://github.com/XOOPS/RegDom/compare/v2.0.1...v2.0.2-beta1
 [2.0.1]: https://github.com/XOOPS/RegDom/compare/v2.0.0...v2.0.1

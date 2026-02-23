@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Uses <source> (PHPUnit 10.1+) for code-coverage source filtering.
-  PHPUnit 9.6 (PHP 7.4/8.0) ignores this element harmlessly; coverage is only
-  collected on PHP 8.3 (PHPUnit 10+) in CI, so the filter is always effective
-  when it matters.
-
-  The xsi:noNamespaceSchemaLocation attribute is intentionally omitted to avoid
-  XSD validation warnings on PHPUnit 9, which does not recognise <source>.
--->
-<phpunit bootstrap="vendor/autoload.php"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
          colors="true"
+         cacheDirectory=".phpunit.cache"
          failOnRisky="true"
          failOnWarning="true">
     <testsuites>
