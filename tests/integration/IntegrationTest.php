@@ -2,13 +2,13 @@
 
 namespace Xoops\RegDom\Tests\Integration;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Xoops\RegDom\PublicSuffixList;
 use Xoops\RegDom\RegisteredDomain;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @requires extension intl
- */
+#[RequiresPhpExtension('intl')]
 class IntegrationTest extends TestCase
 {
     private RegisteredDomain $regdom;
@@ -23,9 +23,7 @@ class IntegrationTest extends TestCase
         $this->regdom = new RegisteredDomain(new PublicSuffixList());
     }
 
-    /**
-     * @dataProvider realWorldDataProvider
-     */
+    #[DataProvider('realWorldDataProvider')]
     public function testGetRegisteredDomainWithRealPsl(string $host, ?string $expected): void
     {
         $this->assertSame($expected, $this->regdom->getRegisteredDomain($host));

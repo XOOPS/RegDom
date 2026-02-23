@@ -2,6 +2,7 @@
 
 namespace Xoops\RegDom\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Xoops\RegDom\PublicSuffixList;
 use Xoops\RegDom\RegisteredDomain;
 use PHPUnit\Framework\TestCase;
@@ -26,9 +27,7 @@ class RegisteredDomainTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @dataProvider getRegisteredDomainProvider
-     */
+    #[DataProvider('getRegisteredDomainProvider')]
     public function testGetRegisteredDomain(string $host, ?string $expected): void
     {
         $this->pslMock->method('getPublicSuffix')->willReturnCallback(function (string $h) {
@@ -72,9 +71,7 @@ class RegisteredDomainTest extends TestCase
         $this->assertSame($expected, $regdom->getRegisteredDomain($host));
     }
 
-    /**
-     * @dataProvider domainMatchesProvider
-     */
+    #[DataProvider('domainMatchesProvider')]
     public function testDomainMatches(string $host, string $domain, bool $expected): void
     {
         $this->pslMock->method('isPublicSuffix')->willReturnCallback(

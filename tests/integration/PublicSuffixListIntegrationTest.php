@@ -2,6 +2,7 @@
 
 namespace Xoops\RegDom\Tests\Integration;
 
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Xoops\RegDom\PublicSuffixList;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
@@ -28,7 +29,6 @@ class PublicSuffixListIntegrationTest extends TestCase
     {
         // Reset static PSL cache to prevent cross-test leakage
         $ref = new ReflectionProperty(PublicSuffixList::class, 'rules');
-        $ref->setAccessible(true);
         $ref->setValue(null, null);
     }
 
@@ -90,9 +90,7 @@ class PublicSuffixListIntegrationTest extends TestCase
         $this->assertTrue($this->psl->isPublicSuffix('xn--55qx5d.cn'));     // 公司.cn in punycode
     }
 
-    /**
-     * @requires extension intl
-     */
+    #[RequiresPhpExtension('intl')]
     public function testIsPublicSuffixWithUnicodeIdnDomains(): void
     {
         // Unicode input requires ext-intl for idn_to_ascii() conversion
@@ -106,9 +104,7 @@ class PublicSuffixListIntegrationTest extends TestCase
         $this->assertSame('xn--55qx5d.cn', $this->psl->getPublicSuffix('test.xn--55qx5d.cn'));
     }
 
-    /**
-     * @requires extension intl
-     */
+    #[RequiresPhpExtension('intl')]
     public function testGetPublicSuffixWithUnicodeIdnDomains(): void
     {
         // Unicode input requires ext-intl for idn_to_ascii() conversion
