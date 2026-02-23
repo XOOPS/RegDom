@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [2.0.2-beta3] - 2026-02-08
+## [2.1.0-beta1] - 2026-02-22
 
 ### Breaking Changes
 * Require PHP 8.2 as minimum version (was PHP 7.4); remove `symfony/polyfill-php80` and `symfony/polyfill-mbstring` polyfill dependencies
@@ -179,7 +179,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 * Import Florian Sager's regdom-php library (Synchro/Marcus Bointon)
 * PHP include file for domain registration data (Synchro/Marcus Bointon)
 
-[2.0.2-beta3]: https://github.com/XOOPS/RegDom/compare/v2.0.2-beta2...HEAD
+[2.1.0-beta1]: https://github.com/XOOPS/RegDom/compare/v2.0.2-beta2...HEAD
 [2.0.2-beta2]: https://github.com/XOOPS/RegDom/compare/v2.0.2-beta1...v2.0.2-beta2
 [2.0.2-beta1]: https://github.com/XOOPS/RegDom/compare/v2.0.1...v2.0.2-beta1
 [2.0.1]: https://github.com/XOOPS/RegDom/compare/v2.0.0...v2.0.1
