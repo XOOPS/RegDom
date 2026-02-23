@@ -13,7 +13,6 @@ src/
     PslCacheNotFoundException.php  Thrown when no valid cache is found
 bin/
   update-psl.php                  Downloads PSL from publicsuffix.org, builds cache
-  reloadpsl                       Convenience wrapper for update-psl.php
 data/
   psl.cache.php                   Bundled PSL cache (PHP array, ~200 KB)
   psl.meta.json                   Download metadata (ETag, Last-Modified)

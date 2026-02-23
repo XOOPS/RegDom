@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 * Fix `normalizeDomain()` crash on empty string — `idn_to_ascii('')` throws `ValueError` on PHP 8.4+; added `$domain !== ''` guard
 * Fix PSL exception tests referencing `parliament.uk` (removed from the PSL); replaced with stable entries (`www.ck`, `city.kawasaki.jp`)
 * Fix `bin/update-psl.php` failing when run standalone on PHP 7.4 — `str_starts_with()` was called without loading the polyfill autoloader
-* Fix `bin/reloadpsl` calling removed methods (`clearDataDirectory()`, `getTree()`); rewritten as a simple wrapper
+* Remove legacy `bin/reloadpsl` wrapper — replaced by `bin/update-psl.php`
 * Fix `getMetadata()` unreachable statement
 
 ### Security

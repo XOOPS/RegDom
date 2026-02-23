@@ -14,7 +14,6 @@ src/                          # Library source code
     PslCacheNotFoundException.php  # Thrown when no valid PSL cache is found
 bin/
   update-psl.php              # Downloads and caches the Mozilla PSL (atomic writes, HTTP conditional)
-  reloadpsl                   # Shell wrapper to force PSL reload
 data/
   psl.cache.php               # Bundled PSL cache (PHP array with NORMAL/WILDCARD/EXCEPTION keys)
   psl.meta.json               # HTTP metadata (ETag, Last-Modified) for conditional downloads
