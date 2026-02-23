@@ -38,7 +38,7 @@ composer update-psl           # Download fresh Mozilla Public Suffix List
 
 ## PHP Compatibility
 
-Code must run on PHP 7.4 through 8.5. Do not use features exclusive to PHP 8.0+ (named arguments, match expressions, union type hints in signatures, enums, fibers, readonly properties, intersection types, `never` return type, first-class callable syntax).
+Code must run on PHP 8.2 through 8.5. PHP 8.2+ language features are available: union types, named arguments, `match` expressions, enums, `readonly`, constructor promotion, intersection types, `never` return type, first-class callable syntax, and `#[Attribute]` syntax.
 
 ## Key Architecture
 
@@ -96,7 +96,7 @@ XOOPS has two major generations with different APIs. Code must support both:
 
 1. Code follows PSR-12 and passes `composer lint`.
 2. Static analysis passes `composer analyse` with no new errors.
-3. Tests pass on all supported PHP versions (7.4-8.5).
+3. Tests pass on all supported PHP versions (8.2-8.5).
 4. New public methods have PHPDoc with `@param`, `@return`, and `@throws` tags.
 5. New functionality has corresponding unit tests.
 6. Changes are documented in the changelog.
