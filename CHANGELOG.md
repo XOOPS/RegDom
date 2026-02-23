@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [2.1.0-beta1] - 2026-02-22
 
 ### Breaking Changes
+
 * Require PHP 8.2 as minimum version (was PHP 7.4); remove `symfony/polyfill-php80` and `symfony/polyfill-mbstring` polyfill dependencies
 * Require `ext-mbstring` as a hard dependency (was provided by polyfill)
 * Remove `bin/reloadpsl` convenience script entirely — invoke `bin/update-psl.php` directly instead
@@ -29,7 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 * Make `normalizeDomain()` a `private static` method (was instance method)
-* Replace `strpos()`/`substr()` patterns with `str_contains()`/`str_starts_with()`/`str_ends_with()` (native in PHP 8.2)
+* Replace `strpos()`/`substr()` patterns with `str_contains()`/`str_starts_with()`/`str_ends_with()` (native in PHP 8.0)
 * Add `@throws PslCacheNotFoundException` PHPDoc tags to `PublicSuffixList::__construct()` and `loadRules()`
 * Add XOOPS copyright headers to all source files
 * Clarify `README.md` license section — library code is Apache-2.0, bundled PSL data is MPL-2.0
